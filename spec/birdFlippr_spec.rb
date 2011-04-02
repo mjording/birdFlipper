@@ -8,7 +8,7 @@ describe "Birdflippr" do
   it "should be able to get tweets" do
       @client.get_tweets.should_not be_empty
   end
-	it "should be able to get the a questionable by its status id" do
+	it "should be able to get a tweet by its status id" do
 		 tweet = @client.get_status(39807438735671297)
 		 tweet.text.should match(/making an @dhh salad/)
 	end

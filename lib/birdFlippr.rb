@@ -3,6 +3,7 @@ class BirdFlipper
 	require 'open-uri'
 	require 'nokogiri'
 	require 'highline'
+  require 'yaml'
 	attr_accessor :client, :access_token
 
 	def initialize(key,secret)
@@ -16,11 +17,15 @@ class BirdFlipper
 			:oauth_token => request_token.token,
 			:oauth_verifier => pin
 		)
+    puts @access_token.to_yaml
 		@client = OAuthRubytter.new(@access_token)
 	end
 
 	def get_tweets
     tweets = @client.home_timeline
+  end
+  def get_status(twitterid)
+    status = @client.show(twitterid)
   end
 
 
