@@ -5,32 +5,51 @@ class BirdFlipper
 	require 'highline'
 	attr_accessor :client, :access_token
 
-	def initialize(key,secret)
-		@client = Rubytter::OAuth.new(key, secret)
-		request_token = @client.get_request_token
-		system('open', request_token.authorize_url) || puts("Access here: #{request_token.authorize_url}\nand...")
-    sleep 2
-    ui = create_highline
-    pin = ui.ask('Enter PIN: ')
-		@access_token ||= request_token.get_access_token(
-			:oauth_token => request_token.token,
-			:oauth_verifier => pin
-		)
-		@client = OAuthRubytter.new(@access_token)
+	def initialize()
+    config_path = File.join(File.expand_path(File.dirname(__FILE__)),'..', 'config')
+    config = YAML.load_file(File.join(config_path, 'config.yml'))
+    
+    access_token = get_access_token(config)
+		@client = OAuthRubytter.new(access_token)
 	end
 
 	def get_tweets
     tweets = @client.home_timeline
   end
-
-
-	def create_highline
-		HighLine.track_eof = false
-		if $stdin.respond_to?(:getbyte) # for ruby1.9
-			def $stdin.getc; getbyte
-			end
-		end
-		HighLine.new($stdin)
-	end
-
+  
+  def get_status(twitterid)
+    status = @client.show(twitterid)
+  end
+  
+  def get_responses(status_id)
+    user_id = get_status(status_id)[:user][:id]
+    params = { :user_id => user_id, :count => 200 }
+    [].tap { |timeline|
+      @client.user_timeline(user_id, params).each do |tweet|
+        timeline << filter_tweet(tweet, status_id)
+      end
+    }.uniq!
+  end
+  
+  def filter_tweet(tweet, status_id)
+    tweet[:text] if tweet[:in_reply_to_status_id_str] == status_id
+  end
+  
+  private
+  
+  def get_access_token(config)
+    consumer = OAuth::Consumer.new(config[:twitter][:consumer_key], 
+                  config[:twitter][:consumer_secret],
+                  { :site => "http://api.twitter.com",
+                    :scheme => :header})
+    
+    # now create the access token object from passed values
+    token_hash = { :oauth_token => config[:twitter][:oauth_token],
+                   :oauth_token_secret => config[:twitter][:oauth_token_secret]
+                 }
+                 
+    access_token = OAuth::AccessToken.from_hash(consumer, token_hash)
+    
+    return access_token
+  end
 end

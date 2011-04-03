@@ -1,0 +1,3 @@
+:twitter:
+  :oauth_token: TOKEN
+  :oauth_token_secret: SECRET
