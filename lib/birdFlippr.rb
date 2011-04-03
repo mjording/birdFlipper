@@ -27,13 +27,17 @@ class BirdFlipper
     params = { :user_id => user_id, :count => 200 }
     [].tap { |timeline|
       @client.user_timeline(user_id, params).each do |tweet|
-        timeline << filter_tweet(tweet, status_id)
+        res = filter_tweet(tweet, status_id)
+
+        timeline << res unless res.nil?
       end
-    }.uniq!
+    }#.uniq!
   end
   
   def filter_tweet(tweet, status_id)
-    tweet[:text] if tweet[:in_reply_to_status_id_str] == status_id
+    tweet if tweet[:in_reply_to_status_id_str] == status_id
+
+    #[:text] #  
   end
   
   private
