@@ -3,6 +3,7 @@ class BirdFlipper
 	require 'open-uri'
 	require 'nokogiri'
 	require 'highline'
+  require 'yaml'
 	attr_accessor :client, :access_token
 
 	def initialize()
